@@ -1,0 +1,77 @@
+C/C++内存管理：
+    （1）C/C++内存分布；
+	     栈：存放非静态局部变量/函数参数/返回值等等，栈自上向下增涨
+		 堆：用于动态内存分配，堆是自下向上增长的
+		 数据段：存储全局数据和静态数据
+		 代码段：可执行代码/只读常量
+    （2）new的使用
+	       // 动态申请一个int类型的空间     
+		          int* ptr4 = new int;
+	       // 动态申请一个int类型的空间并初始化为10     
+		          int* ptr5 = new int(10); 
+	        // 动态申请10个int类型的空间     
+			      int* ptr6 = new int[3];
+                  delete ptr4;     
+				  delete ptr5;     
+				  delete[] ptr6; 
+	（3）malloc/calloc/realloc/free比较
+            malloc：   void* malloc (size_t size)
+                      这个函数向内存申请一块连续可用的空间，
+			          并在申请成功后返回指向这块空间的指针。
+					  注意：如果开辟失败就会返回NULL指针，
+					        所以malloc返回值一定要做检查
+            calloc:   void* calloc (size_t num, size_t size);
+                      函数的功能是为 num 个大小为 size 的元素开辟
+					  一块空间，并且把空间的每个字节初始化为0
+			realloc:  void* realloc (void* ptr, size_t size); 
+			          该函数就是调整原地址空间大小
+					  ptr 是要调整的内存地址
+					  size 就是调整之后的内存大小
+					  返回值：就是调整之后的内存的起始位置
+					  （原因：因为调整大小如果原来内存空间后面有足够
+					  的空间进行扩充就在原有内存之后追加空间，原来
+					  空间数据不发生变化；如果原有空间后面没有足够的
+					  空间进行扩充，那么就会在堆上另找一个合适大小
+					  的连续空间来使用，并且返回一个新的内存地址，拷
+					  贝原有空间数据到新的内存，最后释放原有空间）
+			free： 释放动态内存
+	 （4）new和delete的实现原理 
+        4.1 内置类型 
+            如果申请的是内置类型的空间，new和malloc，delete和free基本类
+			似，不同的地方是：new/delete申请和 释放的是单个元素的空间，
+			new[]和delete[]申请的是连续空间，而且new在申请空间失败时会抛
+			异常， malloc会返回NULL。
+        4.2 自定义类型 
+             new的原理 1. 调用operator new函数申请空间 
+			            2. 在申请的空间上执行构造函数，完成对象的构造	
+		     delete的原理 1. 在空间上执行析构函数，完成对象中资源的清理工作
+
+                           2. 调用operator delete函数释放对象的空间 
+			 new T[N]的原理 
+						   1. 调用operator new[]函数，在operator new[]中实际调
+						   用operator new函数完成N个对象空间的申 请
+						   2. 在申请的空间上执行N次构造函数 
+			 delete[]的原理 
+						   1. 在释放的对象空间上执行N次析构函数，完成N个对象
+						      中资源的清理 
+						   2. 调用operator delete[]释放空间，实际在operator delete[]
+						      中调用operator delete来释放空间
+				
+						
+	 （5）malloc/free和new/delete的对比
+	     共同点是：都是从堆上申请空间，并且需要用户手动释放。
+	  
+	     不同的地方是：1. malloc和free是函数，new和delete是操作符 
+		                 2. malloc申请的空间不会初始化，new可以初始化 
+						 3. malloc申请空间时，需要手动计算空间大小并传递，
+						    new只需在其后跟上空间的类型即可 
+						 4. malloc的返回值为void*, 在使用时必须强转，new不需
+						    要，因为new后跟的是空间的类型 
+						 5. malloc申请空间失败时，返回的是NULL，因此使用时必
+						    须判空，new不需要，但是new需要捕获异常 
+						 6. 申请自定义类型对象时，malloc/free只会开辟空间，
+						    不会调用构造函数与析构函数，而new在申请空间
+							后会调用构造函数完成对象的初始化，delete在释
+							放空间前会调用析构函数完成空间中资源的清理 
+						 7. new/delete比malloc和free的效率稍微低点，因为new/delete
+						   的底层封装了malloc/free
