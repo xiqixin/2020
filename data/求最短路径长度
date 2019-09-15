@@ -1,0 +1,44 @@
+/* 题目描述：
+      给定一个m*n的网格，找到一条从左上角到右下角的最短路径
+      (保存到二维数组v)
+      注意：每次只能向下或者向右移动
+   动态规划：
+       状态：从（0，0）到达（1，0）（1，1）....（m-1，n-1）的最短路径
+        f(i,j):从（0,0）到f（i，j）的最短路径
+   状态递推：
+       f（i,j）=min{f(i-1,j),f(i,j-1)}+v(i,j)
+   初始化：
+       f(0,0)=v(0,0)
+       特殊情况：第0行和第0列
+       f(0,i)=f(0,i-1)+v(0,i)
+       f(i,0)=f(i-1,0)+v(i,0)
+    返回结果：
+        f(m-1,n-1)
+   class Solution{
+   public:
+      int minPathSum(vector<vector<int>> &grid)
+      {
+          if(grid.empty()||gride[0].empty())
+                return 0;
+          int m=grid.size();
+          int n=grid[0].size();
+          vector<vector<int>> f(m,vector<int>(n,0));
+          f[0][0]=grid[0][0];
+          for(int i=1;i<m;++i)
+          {
+              f[0][i]=grid[0][i]+f[0][i-1];
+          }
+          for(int i=1;i<n;++i)
+          {
+              f[i][0]=grid[i][0]+f[i-1][0];
+          }
+          for(int i=1;i<m;++i)
+          {
+              for(int j=1;j<n;++j)
+              {
+                  f[i][j]=grid[i][j]+min(f[i-1][j],f[i][j-1]);
+              }
+          }
+          return f[m-1][n-1];
+      }
+   }     
