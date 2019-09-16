@@ -1,0 +1,37 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+bool isPrime(int num)
+{
+    for(int i=2;i<num/2;++i)
+    {
+        if(num%i==0)
+           return false;
+    }
+    return true;
+}
+int main()
+{
+    int m;
+    while(cin>>m)
+    {
+        if(m==6)
+        {
+            cout<<"6=3+3"<<endl;
+            break;
+        }
+        for(int i=6;i<=m;i+=2)
+        {
+            for(int j=3;j<m/2;j+=2)
+            {
+                tmp=m-j;
+                if(isPrime(tmp)&&isPrime(j))
+                {
+                    if(i+tmp==i)
+                       cout<<i<<"="<<j<<"+"<<tmp<<endl;
+                }
+            }
+        }
+    }
+    return 0;
+}
