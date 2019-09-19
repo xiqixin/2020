@@ -1,0 +1,153 @@
+/*1.为什么要使用职能指针？
+    在我们程序运行过程中，如果对象在堆上申请了内存，
+ 当资源申请成功后，如果在资源free之前的程序段抛出
+ 异常，那么后续该空间就没有被释放，就会产生内存泄
+ 漏问题。那我们使用智能指针就是利用对象生命周期来
+ 控制程序资源，保证不会产生内存泄漏（RAII）
+2.智能指针原理？
+    在对象构造的时候获取资源，接着控制对资源的访问
+ 在对象的生命周期内始终有效；最后在对象析构的时候释
+ 放资源。这样做的好处：不需要显式的释放资源，保证了
+ 对象需要的资源在对象生命周期内始终有效
+ 3.如何实现智能指针？
+    RAII特性：利用对象生命周期来控制程序资源
+    重载operator*和operator-> ，具有像指针一样的行为
+ 4.常见的智能指针有哪些？
+   （1）C++98 中的auto_ptr
+  */ 
+ #inlcude <iostream>
+ #include <memory>//
+ class Date {
+ public:   
+     Date()
+     { 
+         cout << "Date()" << endl;
+     }    
+     ~Date(){ cout << "~Date()" << endl;}
+ 
+    int _year;   
+    int _month; 
+    int _day;
+  };
+  int main() {
+     auto_ptr<Date> ap(new Date);
+     auto_ptr<Date> copy(ap);
+     // auto_ptr的问题：当对象拷贝或者赋值后，前面的对象就悬空了  
+     ap->_year = 2018;//此处就会出错，因为在auto里的拷贝构造和
+                      //赋值运算符重载里面，就会将ap管理的资源
+                      //转交给copy，然后令ap与其所管的资源断开
+                      //ap.ptr=NULL
+     return 0; 
+   }
+   
+   （2）C++11中unique_ptr
+    
+   int main() {    
+        unique_ptr<Date> up(new Date);        
+        // unique_ptr的设计思路非常的粗暴-防拷贝，也就是不让拷贝和赋值。    
+        //方式：把拷贝构造函数和赋值运算符重载函数写成私有
+        unique_ptr<Date> copy(ap);//此处会报错
+        return 0;
+    }
+
+   以下是unique_ptr的原理：
+   template<class T> 
+   class UniquePtr 
+   { 
+      public:    
+          UniquePtr(T * ptr = nullptr)    
+             : _ptr(ptr)    {}
+           ~UniquePtr()    
+           {     
+                if(_ptr)       
+                   delete _ptr;   
+            }
+           T& operator*() {return *_ptr;}
+           T* operator->() {return _ptr;} 
+      private:    
+          // C++98防拷贝的方式：只声明不实现+声明成私有    
+          UniquePtr(UniquePtr<T> const &);   
+          UniquePtr & operator=(UniquePtr<T> const &);       
+          // C++11防拷贝的方式：delete   
+          UniquePtr(UniquePtr<T> const &) = delete;  
+          UniquePtr & operator=(UniquePtr<T> const &) = delete; 
+      private:   
+          T * _ptr; 
+    };
+
+   
+   （3）C++11中的shared_ptr
+      
+      shared_ptr的原理：是通过引用计数的方式来实现多个shared_ptr对象之
+      间共享资源。
+      1). shared_ptr在其内部，给每个资源都维护了着一份计数，用来记录该
+         份资源被几个对象共享。 
+      2). 在对象被销毁时(也就是析构函数调用)，就说明自己不使用该资源了，
+         对象的引用计数减一。
+      3). 如果引用计数是0，就说明自己是最后一个使用该资源的对象，必须释放该资源；
+      4). 如果不是0，就说明除了自己还有其他对象在使用该份资源，不能释放该
+         资源，否则其他对象就成野指针了
+      //}
+  class Date {
+
+  };
+  int main()
+  {
+	  // shared_ptr通过引用计数支持智能指针对象的拷贝   
+	  shared_ptr<Date> sp(new Date);
+	  shared_ptr<Date> copy(sp);
+
+	  cout << "ref count:" << sp.use_count() << endl;//2
+	  cout << "ref count:" << copy.use_count() << endl;//2
+	  system("pause");
+	  return 0;
+  }
+   
+ /////////////////////////////////////////////////////////  
+   
+  //使用shared_ptr产生的问题：
+ struct ListNode {   
+       int _data;    
+       shared_ptr<ListNode> _prev;  
+       shared_ptr<ListNode> _next;
+ 
+       ~ListNode(){ cout << "~ListNode()" << endl; }
+  };
+ 
+ int main()
+ {
+     shared_ptr<ListNode> node1(new ListNode); 
+     shared_ptr<ListNode> node2(new ListNode);   
+     cout << node1.use_count() << endl; 
+     cout << node2.use_count() << endl;
+ 
+     node1->_next = node2; 
+     node2->_prev = node1;
+ 
+     cout << node1.use_count() << endl;    
+     cout << node2.use_count() << endl;
+ 
+     return 0; 
+ }
+
+循环引用分析： 
+  1. node1和node2两个智能指针对象指向两个节点，引用计数变成1，我们不需要手动delete。
+  2. node1的_next指向node2，node2的_prev指向node1，引用计数变成2。 
+  3. node1和node2析构，引用计数减到1，但是_next还指向下一个节点。但是_prev还指向上一个节点。
+  4. 也就是说_next析构了，node2就释放了。
+  5. 也就是说_prev析构了，node1就释放了。 
+  6. 但是_next属于node的成员，node1释放了，_next才会析构，而node1由_prev管理，_prev属于node2 成员，
+   所以这就叫循环引用，谁也不会释放
+解决方法：
+   // 解决方案：在引用计数的场景下，把节点中的_prev和_next改成weak_ptr就可以了 
+   // 原理就是，node1->_next = node2;和node2->_prev = node1;时weak_ptr的_next和_prev不会增加
+   // node1和node2的引用计数。 
+ struct ListNode {   
+       int _data;    
+       weak_ptr<ListNode> _prev;  
+       weak_ptr<ListNode> _next;
+ 
+       ~ListNode(){ cout <<0 "~ListNode()" << endl; }
+  };
+
+
