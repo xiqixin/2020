@@ -1,0 +1,48 @@
+
+//最小非0元素
+//每次找一个非0元素min，然后让每个元素减去min，然后再找最小非0的，依次向下递归
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+ using namespace std;
+int main()
+{
+    int n,k;
+    while(cin>>n>>k)//n 代表v的个数；k代表k轮
+    {
+        vector<int> v(n);
+        for(int i=0;i<n;++i)
+        {
+            cin>>v[i];
+        }
+        sort(v.begin(),v.end());
+        long long cur=0;
+        vector<int> ret;
+        for(size_t i=0;i<n;++i)
+        {
+            int temp=v[i]-cur;
+            if(temp>0)
+            {
+                ret.push_back(temp);
+                cur+=temp;
+            }else if(temp==0)
+            {
+                continue;
+            }
+        }
+        if(ret.size()<k)
+        {
+            for(size_t i=ret.size();i<k;++i)
+            {
+                ret.push_back(0);
+            }
+        }
+        for(int i=0;i<k;++i)
+        {
+          cout<<ret[i]<<endl;
+        }
+    } 
+    
+    return 0;
+}
