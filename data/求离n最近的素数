@@ -1,0 +1,58 @@
+#include <iostream>
+using namespace std;
+
+bool isPrime(int num)
+{
+    for(int i=2;i<num/2;++i)
+    {
+        if(num%i==0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+int main()
+{
+    int n;
+    while(cin>>n)
+    {
+        if(isPrime(n))
+        {
+            cout<<n<<endl;
+            break;
+        }
+        int min;
+        for(int i=n-1;i>=2;i--)
+        {
+            if(isPrime(i))
+            {
+                min=i;
+                break;
+            }
+        }
+        int max;
+        for(int i=n+1;i<n+5;i++)
+        {
+            if(isPrime(i))
+            {
+                max=i;
+                break;
+            }
+        }
+        int minDis=n-min;
+        int maxDis=max-n;
+        if(minDis>maxDis)
+        {
+            cout<<max<<endl;
+            break;
+        }else if(minDis<maxDis){
+            cout<<min<<endl;
+            break;
+        }else{
+            cout<<min<<endl;
+            break;
+        }
+    }
+    return 0;
+}
