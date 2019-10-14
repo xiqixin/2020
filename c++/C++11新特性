@@ -156,8 +156,4 @@ std::get<3>(proof) = " Beautiful!";  // 修改元组的第四个元素
 　　其它新增标准程序库 
 　　正则化表达式库<regex>；字符串类<string>字新增与其他类型互换的方法，如to_string()，stoi()，stol等；STL标准模板库新增unordered_map以及unordered_set，基于hash表的关联容器等等。这些详细使用可自行上网查找，也十分重要的知识点。
 
-
-
-————————————————
-版权声明：本文为CSDN博主「无鞋童鞋」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
-原文链接：https://blog.csdn.net/FX677588/article/details/70157088
+11.[右值引用](https://blog.csdn.net/jiange_zh/article/details/50574455)
