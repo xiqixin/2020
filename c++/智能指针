@@ -14,7 +14,6 @@
     重载operator*和operator-> ，具有像指针一样的行为
  4.常见的智能指针有哪些？
    （1）C++98 中的auto_ptr
-  */ 
  #inlcude <iostream>
  #include <memory>//
  class Date {
